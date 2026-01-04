@@ -1,9 +1,9 @@
-// src/store/index.ts - FINAL FIX 100% ✅
+// src/store/index.ts - FIXED: All API paths with /api prefix
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "@/lib/toast";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const CACHE_TIME = 5000;
 
 console.log("🔗 API URL:", API_URL);
@@ -121,7 +121,7 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const data = await fetchAPINoAuth(`${API_URL}/auth/login`, {
+          const data = await fetchAPINoAuth(`${API_URL}/api/auth/login`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
@@ -147,7 +147,7 @@ export const useAuthStore = create<AuthState>()(
       register: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const data = await fetchAPINoAuth(`${API_URL}/auth/register`, {
+          const data = await fetchAPINoAuth(`${API_URL}/api/auth/register`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
@@ -184,7 +184,7 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const data = await fetchAPINoAuth(`${API_URL}/auth/refresh`, {
+          const data = await fetchAPINoAuth(`${API_URL}/api/auth/refresh`, {
             method: "POST",
             body: JSON.stringify({ refreshToken }),
           });
@@ -214,7 +214,7 @@ export const useAuthStore = create<AuthState>()(
 
         if (refreshToken) {
           try {
-            await fetchAPINoAuth(`${API_URL}/auth/logout`, {
+            await fetchAPINoAuth(`${API_URL}/api/auth/logout`, {
               method: "POST",
               body: JSON.stringify({ refreshToken }),
             });
@@ -341,9 +341,9 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
     try {
       const [pendingData, completedData, urgentData] = await Promise.all([
-        fetchAPI(`${API_URL}/tasks`, token),
-        fetchAPI(`${API_URL}/tasks/completed`, token),
-        fetchAPI(`${API_URL}/tasks/urgent`, token),
+        fetchAPI(`${API_URL}/api/tasks`, token),
+        fetchAPI(`${API_URL}/api/tasks/completed`, token),
+        fetchAPI(`${API_URL}/api/tasks/urgent`, token),
       ]);
 
       const allTasksMap = new Map<number, Task>();
@@ -394,7 +394,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     set({ isLoading: true, error: null, pendingRequests: new Set(pendingRequests) });
 
     try {
-      const data = await fetchAPI(`${API_URL}/tasks/completed`, token);
+      const data = await fetchAPI(`${API_URL}/api/tasks/completed`, token);
 
       pendingRequests.delete(requestKey);
       set({
@@ -432,7 +432,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     set({ isLoading: true, error: null, pendingRequests: new Set(pendingRequests) });
 
     try {
-      const data = await fetchAPI(`${API_URL}/tasks/urgent`, token);
+      const data = await fetchAPI(`${API_URL}/api/tasks/urgent`, token);
 
       pendingRequests.delete(requestKey);
       set({
@@ -475,7 +475,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      await fetchAPI(`${API_URL}/tasks`, token, {
+      await fetchAPI(`${API_URL}/api/tasks`, token, {
         method: "POST",
         body: JSON.stringify({
           title: title.trim(),
@@ -523,7 +523,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       if (taskData.completed !== undefined) backendData.completed = taskData.completed;
       if (taskData.status !== undefined) backendData.status = taskData.status;
 
-      await fetchAPI(`${API_URL}/tasks/${id}`, token, {
+      await fetchAPI(`${API_URL}/api/tasks/${id}`, token, {
         method: "PUT",
         body: JSON.stringify(backendData),
       });
@@ -562,7 +562,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     });
 
     try {
-      await fetchAPI(`${API_URL}/tasks/${id}`, token, { method: "DELETE" });
+      await fetchAPI(`${API_URL}/api/tasks/${id}`, token, { method: "DELETE" });
 
       set({ lastFetch: 0, lastCompletedFetch: 0, lastUrgentFetch: 0 });
       toast.success("Task deleted successfully! 🗑️");
@@ -599,7 +599,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     });
 
     try {
-      await fetchAPI(`${API_URL}/tasks/${id}`, token, {
+      await fetchAPI(`${API_URL}/api/tasks/${id}`, token, {
         method: "PUT",
         body: JSON.stringify({ completed: true }),
       });
@@ -642,4 +642,3 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     });
   },
 }));
-
