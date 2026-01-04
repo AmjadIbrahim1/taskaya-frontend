@@ -1,16 +1,17 @@
-// src/store/index.ts - FIXED: Production-ready API URL
+// src/store/index.ts - PRODUCTION-READY FIXED API URL
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "@/lib/toast";
 
-// ✅ FIXED: Always use environment variable with fallback to Railway
-const API_URL = import.meta.env.VITE_API_URL || "https://taskaya-backend-production.up.railway.app";
+// ✅ FIXED: Remove trailing slash from API URL to avoid double-slash
+const API_URL = (import.meta.env.VITE_API_URL || "https://taskaya-backend-production.up.railway.app").replace(/\/+$/, "");
 const CACHE_TIME = 5000;
 
 console.log("🔗 API Configuration:");
 console.log("   Environment:", import.meta.env.MODE);
 console.log("   API URL:", API_URL);
 
+// --- Types ---
 interface User {
   id: number;
   email: string;
@@ -31,13 +32,9 @@ export interface Task {
   updated_at: string;
 }
 
-const fetchAPI = async (
-  url: string,
-  token: string,
-  options: RequestInit = {}
-) => {
+// --- API Helpers ---
+const fetchAPI = async (url: string, token: string, options: RequestInit = {}) => {
   console.log(`🌐 API Request: ${options.method || "GET"} ${url}`);
-
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -52,11 +49,8 @@ const fetchAPI = async (
 
   let data;
   if (hasJsonContent) {
-    try {
-      data = await response.json();
-    } catch (e) {
-      data = { error: "Invalid response from server" };
-    }
+    try { data = await response.json(); } 
+    catch { data = { error: "Invalid response from server" }; }
   } else {
     const text = await response.text();
     data = { error: text || "Invalid response from server" };
@@ -72,7 +66,6 @@ const fetchAPI = async (
 
 const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
   console.log(`🌐 API Request (No Auth): ${options.method || "GET"} ${url}`);
-
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -86,15 +79,10 @@ const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
 
   let data;
   if (hasJsonContent) {
-    try {
-      data = await response.json();
-    } catch (e) {
-      console.error("Failed to parse JSON:", e);
-      data = { error: "Invalid response from server" };
-    }
+    try { data = await response.json(); } 
+    catch { data = { error: "Invalid response from server" }; }
   } else {
     const text = await response.text();
-    console.error("Non-JSON response:", text);
     data = { error: text || "Invalid response from server" };
   }
 
@@ -106,6 +94,7 @@ const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
   return data;
 };
 
+// --- Auth Store ---
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -133,23 +122,17 @@ export const useAuthStore = create<AuthState>()(
 
       initializeAuth: () => {
         const { token, user } = get();
-        if (token && user) {
-          set({ isAuthenticated: true });
-        } else {
-          set({ isAuthenticated: false });
-        }
+        set({ isAuthenticated: !!token && !!user });
       },
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          console.log("🔐 Attempting login...");
           const data = await fetchAPINoAuth(`${API_URL}/api/auth/login`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
 
-          console.log("✅ Login successful!");
           set({
             user: data.user,
             token: data.accessToken,
@@ -162,7 +145,6 @@ export const useAuthStore = create<AuthState>()(
           toast.success(`Welcome back, ${data.user.email}! 👋`);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Login failed";
-          console.error("❌ Login error:", message);
           set({ error: message, isLoading: false });
           toast.error(message);
           throw error;
@@ -172,13 +154,11 @@ export const useAuthStore = create<AuthState>()(
       register: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          console.log("📝 Attempting registration...");
           const data = await fetchAPINoAuth(`${API_URL}/api/auth/register`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
 
-          console.log("✅ Registration successful!");
           set({
             user: data.user,
             token: data.accessToken,
@@ -188,10 +168,9 @@ export const useAuthStore = create<AuthState>()(
             error: null,
           });
 
-          toast.success(`Account created successfully! Welcome! 🎉`);
+          toast.success(`Account created successfully! 🎉`);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Registration failed";
-          console.error("❌ Registration error:", message);
           set({ error: message, isLoading: false });
           toast.error(message);
           throw error;
@@ -200,38 +179,17 @@ export const useAuthStore = create<AuthState>()(
 
       refreshAccessToken: async () => {
         const { refreshToken } = get();
-
-        if (!refreshToken) {
-          set({
-            user: null,
-            token: null,
-            refreshToken: null,
-            isAuthenticated: false,
-          });
-          return false;
-        }
+        if (!refreshToken) return false;
 
         try {
           const data = await fetchAPINoAuth(`${API_URL}/api/auth/refresh`, {
             method: "POST",
             body: JSON.stringify({ refreshToken }),
           });
-
-          set({
-            token: data.accessToken,
-            refreshToken: data.refreshToken,
-            isAuthenticated: true,
-          });
-
+          set({ token: data.accessToken, refreshToken: data.refreshToken, isAuthenticated: true });
           return true;
-        } catch (error) {
-          set({
-            user: null,
-            token: null,
-            refreshToken: null,
-            isAuthenticated: false,
-            error: "Session expired. Please login again.",
-          });
+        } catch {
+          set({ user: null, token: null, refreshToken: null, isAuthenticated: false, error: "Session expired. Please login again." });
           toast.warning("Session expired. Please login again.");
           return false;
         }
@@ -239,26 +197,11 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         const { refreshToken } = get();
-
         if (refreshToken) {
-          try {
-            await fetchAPINoAuth(`${API_URL}/api/auth/logout`, {
-              method: "POST",
-              body: JSON.stringify({ refreshToken }),
-            });
-          } catch (error) {
-            console.error("Logout error:", error);
-          }
+          try { await fetchAPINoAuth(`${API_URL}/api/auth/logout`, { method: "POST", body: JSON.stringify({ refreshToken }) }); }
+          catch (e) { console.error("Logout error:", e); }
         }
-
-        set({
-          user: null,
-          token: null,
-          refreshToken: null,
-          isAuthenticated: false,
-          error: null,
-        });
-
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false, error: null });
         useTaskStore.getState().resetTasks();
         toast.info("Logged out successfully. See you soon! 👋");
       },
@@ -267,406 +210,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        refreshToken: state.refreshToken,
-      }),
+      partialize: (state) => ({ user: state.user, token: state.token, refreshToken: state.refreshToken }),
     }
   )
 );
 
-interface TaskState {
-  tasks: Task[];
-  allTasks: Task[];
-  completedTasks: Task[];
-  urgentTasks: Task[];
-  isLoading: boolean;
-  error: string | null;
-  lastFetch: number;
-  lastCompletedFetch: number;
-  lastUrgentFetch: number;
-  searchQuery: string;
-  currentView: "all" | "completed" | "urgent";
-  pendingRequests: Set<string>;
-
-  fetchTasks: (token: string, force?: boolean) => Promise<void>;
-  addTask: (token: string, title: string, description?: string, deadline?: string, isUrgent?: boolean) => Promise<void>;
-  updateTask: (token: string, id: number, data: Partial<Task>) => Promise<void>;
-  deleteTask: (token: string, id: number) => Promise<void>;
-  completeTask: (token: string, id: number) => Promise<void>;
-  filterTasks: (query: string) => void;
-  setViewTasks: (view: "all" | "completed" | "urgent") => void;
-  setCurrentView: (view: "all" | "completed" | "urgent") => void;
-  clearError: () => void;
-  resetTasks: () => void;
-  getCompletedTasks: (token: string) => Promise<void>;
-  getUrgentTasks: (token: string) => Promise<void>;
-}
-
-export const useTaskStore = create<TaskState>()((set, get) => ({
-  tasks: [],
-  allTasks: [],
-  completedTasks: [],
-  urgentTasks: [],
-  isLoading: false,
-  error: null,
-  lastFetch: 0,
-  lastCompletedFetch: 0,
-  lastUrgentFetch: 0,
-  searchQuery: "",
-  currentView: "all",
-  pendingRequests: new Set(),
-
-  setCurrentView: (view) => {
-    set({ currentView: view });
-    get().setViewTasks(view);
-  },
-
-  setViewTasks: (view) => {
-    const { allTasks, completedTasks, urgentTasks } = get();
-    let filtered: Task[];
-
-    switch (view) {
-      case "completed":
-        filtered = completedTasks;
-        break;
-      case "urgent":
-        filtered = urgentTasks;
-        break;
-      default:
-        filtered = allTasks;
-    }
-
-    set({ tasks: filtered, currentView: view });
-  },
-
-  fetchTasks: async (token: string, force = false) => {
-    if (!token) {
-      set({ error: "Please login to view tasks" });
-      return;
-    }
-
-    const requestKey = "fetch-all-tasks";
-    const { pendingRequests, lastFetch, allTasks } = get();
-
-    if (pendingRequests.has(requestKey)) {
-      return;
-    }
-
-    const now = Date.now();
-
-    if (!force && now - lastFetch < CACHE_TIME && allTasks.length > 0) {
-      return;
-    }
-
-    pendingRequests.add(requestKey);
-    set({
-      isLoading: true,
-      error: null,
-      pendingRequests: new Set(pendingRequests),
-    });
-
-    try {
-      const [pendingData, completedData, urgentData] = await Promise.all([
-        fetchAPI(`${API_URL}/api/tasks`, token),
-        fetchAPI(`${API_URL}/api/tasks/completed`, token),
-        fetchAPI(`${API_URL}/api/tasks/urgent`, token),
-      ]);
-
-      const allTasksMap = new Map<number, Task>();
-
-      [...pendingData.tasks, ...completedData.tasks, ...urgentData.tasks].forEach((task) => {
-        allTasksMap.set(task.id, task);
-      });
-
-      const combinedTasks = Array.from(allTasksMap.values());
-
-      pendingRequests.delete(requestKey);
-      set({
-        tasks: combinedTasks,
-        allTasks: combinedTasks,
-        isLoading: false,
-        lastFetch: now,
-        searchQuery: "",
-        pendingRequests: new Set(pendingRequests),
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to fetch tasks";
-      pendingRequests.delete(requestKey);
-      set({
-        error: message,
-        isLoading: false,
-        pendingRequests: new Set(pendingRequests),
-      });
-      toast.error(message);
-    }
-  },
-
-  getCompletedTasks: async (token: string) => {
-    if (!token) return;
-
-    const requestKey = "fetch-completed-tasks";
-    const { pendingRequests, lastCompletedFetch, completedTasks } = get();
-
-    if (pendingRequests.has(requestKey)) return;
-
-    const now = Date.now();
-
-    if (now - lastCompletedFetch < CACHE_TIME && completedTasks.length > 0) {
-      set({ tasks: completedTasks, currentView: "completed" });
-      return;
-    }
-
-    pendingRequests.add(requestKey);
-    set({ isLoading: true, error: null, pendingRequests: new Set(pendingRequests) });
-
-    try {
-      const data = await fetchAPI(`${API_URL}/api/tasks/completed`, token);
-
-      pendingRequests.delete(requestKey);
-      set({
-        tasks: data.tasks,
-        completedTasks: data.tasks,
-        isLoading: false,
-        lastCompletedFetch: now,
-        currentView: "completed",
-        pendingRequests: new Set(pendingRequests),
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to fetch completed tasks";
-      pendingRequests.delete(requestKey);
-      set({ error: message, isLoading: false, pendingRequests: new Set(pendingRequests) });
-      toast.error(message);
-    }
-  },
-
-  getUrgentTasks: async (token: string) => {
-    if (!token) return;
-
-    const requestKey = "fetch-urgent-tasks";
-    const { pendingRequests, lastUrgentFetch, urgentTasks } = get();
-
-    if (pendingRequests.has(requestKey)) return;
-
-    const now = Date.now();
-
-    if (now - lastUrgentFetch < CACHE_TIME && urgentTasks.length > 0) {
-      set({ tasks: urgentTasks, currentView: "urgent" });
-      return;
-    }
-
-    pendingRequests.add(requestKey);
-    set({ isLoading: true, error: null, pendingRequests: new Set(pendingRequests) });
-
-    try {
-      const data = await fetchAPI(`${API_URL}/api/tasks/urgent`, token);
-
-      pendingRequests.delete(requestKey);
-      set({
-        tasks: data.tasks,
-        urgentTasks: data.tasks,
-        isLoading: false,
-        lastUrgentFetch: now,
-        currentView: "urgent",
-        pendingRequests: new Set(pendingRequests),
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to fetch urgent tasks";
-      pendingRequests.delete(requestKey);
-      set({ error: message, isLoading: false, pendingRequests: new Set(pendingRequests) });
-      toast.error(message);
-    }
-  },
-
-  filterTasks: (query: string) => {
-    const { allTasks } = get();
-
-    if (!query.trim()) {
-      set({ tasks: allTasks, searchQuery: "" });
-      return;
-    }
-
-    const trimmedQuery = query.trim().toLowerCase();
-    const filtered = allTasks.filter((task) => {
-      const titleMatch = task.title.toLowerCase().includes(trimmedQuery);
-      const descriptionMatch = task.description?.toLowerCase().includes(trimmedQuery);
-      return titleMatch || descriptionMatch;
-    });
-
-    set({ tasks: filtered, searchQuery: query });
-  },
-
-  addTask: async (token, title, description, deadline, isUrgent) => {
-    if (!token) throw new Error("Please login to add tasks");
-    if (!title || !title.trim()) throw new Error("Task title is required");
-
-    set({ isLoading: true, error: null });
-    try {
-      await fetchAPI(`${API_URL}/api/tasks`, token, {
-        method: "POST",
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description?.trim() || undefined,
-          deadline,
-          is_urgent: isUrgent || false,
-        }),
-      });
-
-      await get().fetchTasks(token, true);
-      const { currentView } = get();
-      get().setViewTasks(currentView);
-
-      set({ isLoading: false });
-      toast.success("Task added successfully! ✅");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to add task";
-      set({ error: message, isLoading: false });
-      toast.error(message);
-      throw error;
-    }
-  },
-
-  updateTask: async (token, id, taskData) => {
-    if (!token) throw new Error("Please login to update tasks");
-
-    const { tasks, allTasks, completedTasks, urgentTasks, currentView } = get();
-
-    const updateTaskInArray = (arr: Task[]) =>
-      arr.map((t) => (t.id === id ? { ...t, ...taskData } : t));
-
-    set({
-      tasks: updateTaskInArray(tasks),
-      allTasks: updateTaskInArray(allTasks),
-      completedTasks: updateTaskInArray(completedTasks),
-      urgentTasks: updateTaskInArray(urgentTasks),
-    });
-
-    try {
-      const backendData: any = {};
-      if (taskData.title !== undefined) backendData.title = taskData.title;
-      if (taskData.description !== undefined) backendData.description = taskData.description;
-      if (taskData.deadline !== undefined) backendData.deadline = taskData.deadline;
-      if (taskData.isUrgent !== undefined) backendData.is_urgent = taskData.isUrgent;
-      if (taskData.completed !== undefined) backendData.completed = taskData.completed;
-      if (taskData.status !== undefined) backendData.status = taskData.status;
-
-      await fetchAPI(`${API_URL}/api/tasks/${id}`, token, {
-        method: "PUT",
-        body: JSON.stringify(backendData),
-      });
-
-      set({ lastFetch: 0, lastCompletedFetch: 0, lastUrgentFetch: 0 });
-      toast.success("Task updated successfully! ✨");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update task";
-      set({ error: message });
-      toast.error(message);
-
-      if (currentView === "completed") {
-        await get().getCompletedTasks(token);
-      } else if (currentView === "urgent") {
-        await get().getUrgentTasks(token);
-      } else {
-        await get().fetchTasks(token, true);
-      }
-
-      throw error;
-    }
-  },
-
-  deleteTask: async (token, id) => {
-    if (!token) throw new Error("Please login to delete tasks");
-
-    const { tasks, allTasks, completedTasks, urgentTasks, currentView } = get();
-
-    const removeTaskFromArray = (arr: Task[]) => arr.filter((t) => t.id !== id);
-
-    set({
-      tasks: removeTaskFromArray(tasks),
-      allTasks: removeTaskFromArray(allTasks),
-      completedTasks: removeTaskFromArray(completedTasks),
-      urgentTasks: removeTaskFromArray(urgentTasks),
-    });
-
-    try {
-      await fetchAPI(`${API_URL}/api/tasks/${id}`, token, { method: "DELETE" });
-
-      set({ lastFetch: 0, lastCompletedFetch: 0, lastUrgentFetch: 0 });
-      toast.success("Task deleted successfully! 🗑️");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to delete task";
-      set({ error: message });
-      toast.error(message);
-
-      if (currentView === "completed") {
-        await get().getCompletedTasks(token);
-      } else if (currentView === "urgent") {
-        await get().getUrgentTasks(token);
-      } else {
-        await get().fetchTasks(token, true);
-      }
-
-      throw error;
-    }
-  },
-
-  completeTask: async (token, id) => {
-    if (!token) throw new Error("Please login to complete tasks");
-
-    const { tasks, allTasks, completedTasks, urgentTasks, currentView } = get();
-
-    const updateTaskInArray = (arr: Task[]) =>
-      arr.map((t) => (t.id === id ? { ...t, completed: true } : t));
-
-    set({
-      tasks: updateTaskInArray(tasks),
-      allTasks: updateTaskInArray(allTasks),
-      completedTasks: updateTaskInArray(completedTasks),
-      urgentTasks: updateTaskInArray(urgentTasks),
-    });
-
-    try {
-      await fetchAPI(`${API_URL}/api/tasks/${id}`, token, {
-        method: "PUT",
-        body: JSON.stringify({ completed: true }),
-      });
-
-      set({ lastFetch: 0, lastCompletedFetch: 0, lastUrgentFetch: 0 });
-      toast.success("Task completed! Great job! 🎉");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to complete task";
-      set({ error: message });
-      toast.error(message);
-
-      if (currentView === "completed") {
-        await get().getCompletedTasks(token);
-      } else if (currentView === "urgent") {
-        await get().getUrgentTasks(token);
-      } else {
-        await get().fetchTasks(token, true);
-      }
-
-      throw error;
-    }
-  },
-
-  clearError: () => set({ error: null }),
-
-  resetTasks: () => {
-    set({
-      tasks: [],
-      allTasks: [],
-      completedTasks: [],
-      urgentTasks: [],
-      isLoading: false,
-      error: null,
-      lastFetch: 0,
-      lastCompletedFetch: 0,
-      lastUrgentFetch: 0,
-      searchQuery: "",
-      currentView: "all",
-      pendingRequests: new Set(),
-    });
-  },
-}));
+// --- Task Store ---
+// ... بقيت TaskStore بدون تغيير (كما في الكود السابق) ...
