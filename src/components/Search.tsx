@@ -1,4 +1,4 @@
-// src/components/Search.tsx - FIXED ✅
+// src/components/Search.tsx - COMPLETE FINAL VERSION ✅
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { useAuthStore, useTaskStore } from "@/store";
 import { Search as SearchIcon, X, Sparkles, Loader2 } from "lucide-react";
@@ -10,15 +10,11 @@ export const Search = memo(() => {
   const { tasks, allTasks, filterTasks, fetchTasks } = useTaskStore();
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  // ✅ FIXED: Pass token parameter to fetchTasks
+  // Load all tasks when component mounts
   useEffect(() => {
-    const loadAllTasks = async () => {
-      if (token) {
-        await fetchTasks(token); // ✅ This was the issue - was calling fetchTasks() without token
-      }
-    };
-
-    loadAllTasks();
+    if (token) {
+      fetchTasks(token);
+    }
   }, [token, fetchTasks]);
 
   const debouncedFilter = useCallback(
