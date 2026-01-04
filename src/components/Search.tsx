@@ -1,4 +1,4 @@
-// src/components/Search.tsx - FIXED
+// src/components/Search.tsx - FIXED: fetchTasks requires token
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { useAuthStore, useTaskStore } from "@/store";
 import { Search as SearchIcon, X, Sparkles, Loader2 } from "lucide-react";
@@ -10,7 +10,7 @@ export const Search = memo(() => {
   const { tasks, allTasks, filterTasks, fetchTasks } = useTaskStore();
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  // ✅ FIXED: Remove second parameter
+  // ✅ FIXED: Pass token to fetchTasks
   useEffect(() => {
     const loadAllTasks = async () => {
       if (token) {
@@ -19,8 +19,7 @@ export const Search = memo(() => {
     };
 
     loadAllTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, fetchTasks]); // Added fetchTasks to deps
 
   const debouncedFilter = useCallback(
     (value: string) => {
