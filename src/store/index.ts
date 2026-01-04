@@ -1,19 +1,13 @@
-// src/store/index.ts - COMPLETE FIX ✅
+// src/store/index.ts - FINAL FIX 100% ✅
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "@/lib/toast";
 
-// ============================================
-// API CONFIGURATION
-// ============================================
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const CACHE_TIME = 5000;
 
 console.log("🔗 API URL:", API_URL);
 
-// ============================================
-// TYPES
-// ============================================
 interface User {
   id: number;
   email: string;
@@ -34,16 +28,12 @@ export interface Task {
   updated_at: string;
 }
 
-// ============================================
-// API HELPERS
-// ============================================
 const fetchAPI = async (
   url: string,
   token: string,
   options: RequestInit = {}
 ) => {
   console.log(`🌐 API Request: ${options.method || "GET"} ${url}`);
-  console.log(`🔑 Using token: ${token.substring(0, 20)}...`);
 
   const response = await fetch(url, {
     ...options,
@@ -55,37 +45,28 @@ const fetchAPI = async (
   });
 
   const contentType = response.headers.get("content-type");
-  const hasJsonContent =
-    contentType && contentType.includes("application/json");
+  const hasJsonContent = contentType && contentType.includes("application/json");
 
   let data;
   if (hasJsonContent) {
     try {
       data = await response.json();
     } catch (e) {
-      console.error("❌ Failed to parse JSON response");
       data = { error: "Invalid response from server" };
     }
   } else {
     const text = await response.text();
-    console.error("❌ Non-JSON response:", text);
     data = { error: text || "Invalid response from server" };
   }
 
   if (!response.ok) {
-    console.error(`❌ API Error (${response.status}):`, data);
-    throw new Error(
-      data.error || data.message || `Request failed: ${response.status}`
-    );
+    throw new Error(data.error || data.message || `Request failed: ${response.status}`);
   }
 
-  console.log(`✅ API Success:`, data);
   return data;
 };
 
 const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
-  console.log(`🌐 API Request (No Auth): ${options.method || "GET"} ${url}`);
-
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -97,17 +78,12 @@ const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
   const data = await response.json();
 
   if (!response.ok) {
-    console.error(`❌ API Error (${response.status}):`, data);
     throw new Error(data.error || `Request failed: ${response.status}`);
   }
 
-  console.log(`✅ API Success:`, data);
   return data;
 };
 
-// ============================================
-// AUTH STORE
-// ============================================
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -135,12 +111,6 @@ export const useAuthStore = create<AuthState>()(
 
       initializeAuth: () => {
         const { token, user } = get();
-        console.log(
-          "🔐 Initializing auth - Token exists:",
-          !!token,
-          "User exists:",
-          !!user
-        );
         if (token && user) {
           set({ isAuthenticated: true });
         } else {
@@ -151,13 +121,11 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          console.log("🔑 Attempting login for:", email);
           const data = await fetchAPINoAuth(`${API_URL}/auth/login`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
 
-          console.log("✅ Login successful!");
           set({
             user: data.user,
             token: data.accessToken,
@@ -169,9 +137,7 @@ export const useAuthStore = create<AuthState>()(
 
           toast.success(`Welcome back, ${data.user.email}! 👋`);
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Login failed";
-          console.error("❌ Login failed:", message);
+          const message = error instanceof Error ? error.message : "Login failed";
           set({ error: message, isLoading: false });
           toast.error(message);
           throw error;
@@ -181,13 +147,11 @@ export const useAuthStore = create<AuthState>()(
       register: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          console.log("📝 Attempting registration for:", email);
           const data = await fetchAPINoAuth(`${API_URL}/auth/register`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
 
-          console.log("✅ Registration successful!");
           set({
             user: data.user,
             token: data.accessToken,
@@ -199,9 +163,7 @@ export const useAuthStore = create<AuthState>()(
 
           toast.success(`Account created successfully! Welcome! 🎉`);
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Registration failed";
-          console.error("❌ Registration failed:", message);
+          const message = error instanceof Error ? error.message : "Registration failed";
           set({ error: message, isLoading: false });
           toast.error(message);
           throw error;
@@ -212,7 +174,6 @@ export const useAuthStore = create<AuthState>()(
         const { refreshToken } = get();
 
         if (!refreshToken) {
-          console.log("❌ No refresh token available");
           set({
             user: null,
             token: null,
@@ -223,13 +184,11 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          console.log("🔄 Refreshing access token...");
           const data = await fetchAPINoAuth(`${API_URL}/auth/refresh`, {
             method: "POST",
             body: JSON.stringify({ refreshToken }),
           });
 
-          console.log("✅ Token refreshed successfully");
           set({
             token: data.accessToken,
             refreshToken: data.refreshToken,
@@ -238,7 +197,6 @@ export const useAuthStore = create<AuthState>()(
 
           return true;
         } catch (error) {
-          console.error("❌ Token refresh failed:", error);
           set({
             user: null,
             token: null,
@@ -256,13 +214,12 @@ export const useAuthStore = create<AuthState>()(
 
         if (refreshToken) {
           try {
-            console.log("👋 Logging out...");
             await fetchAPINoAuth(`${API_URL}/auth/logout`, {
               method: "POST",
               body: JSON.stringify({ refreshToken }),
             });
           } catch (error) {
-            console.error("⚠️ Logout request failed:", error);
+            console.error("Logout error:", error);
           }
         }
 
@@ -291,9 +248,6 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// ============================================
-// TASK STORE - ✅ FIXED fetchTasks signature
-// ============================================
 interface TaskState {
   tasks: Task[];
   allTasks: Task[];
@@ -308,15 +262,8 @@ interface TaskState {
   currentView: "all" | "completed" | "urgent";
   pendingRequests: Set<string>;
 
-  // ✅ CRITICAL FIX: fetchTasks must accept token parameter
   fetchTasks: (token: string, force?: boolean) => Promise<void>;
-  addTask: (
-    token: string,
-    title: string,
-    description?: string,
-    deadline?: string,
-    isUrgent?: boolean
-  ) => Promise<void>;
+  addTask: (token: string, title: string, description?: string, deadline?: string, isUrgent?: boolean) => Promise<void>;
   updateTask: (token: string, id: number, data: Partial<Task>) => Promise<void>;
   deleteTask: (token: string, id: number) => Promise<void>;
   completeTask: (token: string, id: number) => Promise<void>;
@@ -348,7 +295,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     get().setViewTasks(view);
   },
 
-  setViewTasks: (view: "all" | "completed" | "urgent") => {
+  setViewTasks: (view) => {
     const { allTasks, completedTasks, urgentTasks } = get();
     let filtered: Task[];
 
@@ -359,16 +306,13 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       case "urgent":
         filtered = urgentTasks;
         break;
-      case "all":
       default:
         filtered = allTasks;
-        break;
     }
 
     set({ tasks: filtered, currentView: view });
   },
 
-  // ✅ CRITICAL FIX: Implementation must match interface signature
   fetchTasks: async (token: string, force = false) => {
     if (!token) {
       set({ error: "Please login to view tasks" });
@@ -379,14 +323,12 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     const { pendingRequests, lastFetch, allTasks } = get();
 
     if (pendingRequests.has(requestKey)) {
-      console.log("⏳ Fetch already in progress, skipping...");
       return;
     }
 
     const now = Date.now();
 
     if (!force && now - lastFetch < CACHE_TIME && allTasks.length > 0) {
-      console.log("📦 Using cached tasks");
       return;
     }
 
@@ -398,8 +340,6 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     });
 
     try {
-      console.log("📥 Fetching all tasks from backend...");
-
       const [pendingData, completedData, urgentData] = await Promise.all([
         fetchAPI(`${API_URL}/tasks`, token),
         fetchAPI(`${API_URL}/tasks/completed`, token),
@@ -408,17 +348,11 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
 
       const allTasksMap = new Map<number, Task>();
 
-      [
-        ...pendingData.tasks,
-        ...completedData.tasks,
-        ...urgentData.tasks,
-      ].forEach((task) => {
+      [...pendingData.tasks, ...completedData.tasks, ...urgentData.tasks].forEach((task) => {
         allTasksMap.set(task.id, task);
       });
 
       const combinedTasks = Array.from(allTasksMap.values());
-
-      console.log(`✅ Fetched ${combinedTasks.length} tasks total`);
 
       pendingRequests.delete(requestKey);
       set({
@@ -430,9 +364,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
         pendingRequests: new Set(pendingRequests),
       });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to fetch tasks";
-      console.error("❌ Fetch tasks error:", message);
+      const message = error instanceof Error ? error.message : "Failed to fetch tasks";
       pendingRequests.delete(requestKey);
       set({
         error: message,
@@ -444,17 +376,12 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   getCompletedTasks: async (token: string) => {
-    if (!token) {
-      set({ error: "Please login to view tasks" });
-      return;
-    }
+    if (!token) return;
 
     const requestKey = "fetch-completed-tasks";
     const { pendingRequests, lastCompletedFetch, completedTasks } = get();
 
-    if (pendingRequests.has(requestKey)) {
-      return;
-    }
+    if (pendingRequests.has(requestKey)) return;
 
     const now = Date.now();
 
@@ -464,14 +391,9 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     }
 
     pendingRequests.add(requestKey);
-    set({
-      isLoading: true,
-      error: null,
-      pendingRequests: new Set(pendingRequests),
-    });
+    set({ isLoading: true, error: null, pendingRequests: new Set(pendingRequests) });
 
     try {
-      console.log("📥 Fetching completed tasks...");
       const data = await fetchAPI(`${API_URL}/tasks/completed`, token);
 
       pendingRequests.delete(requestKey);
@@ -484,32 +406,20 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
         pendingRequests: new Set(pendingRequests),
       });
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch completed tasks";
+      const message = error instanceof Error ? error.message : "Failed to fetch completed tasks";
       pendingRequests.delete(requestKey);
-      set({
-        error: message,
-        isLoading: false,
-        pendingRequests: new Set(pendingRequests),
-      });
+      set({ error: message, isLoading: false, pendingRequests: new Set(pendingRequests) });
       toast.error(message);
     }
   },
 
   getUrgentTasks: async (token: string) => {
-    if (!token) {
-      set({ error: "Please login to view tasks" });
-      return;
-    }
+    if (!token) return;
 
     const requestKey = "fetch-urgent-tasks";
     const { pendingRequests, lastUrgentFetch, urgentTasks } = get();
 
-    if (pendingRequests.has(requestKey)) {
-      return;
-    }
+    if (pendingRequests.has(requestKey)) return;
 
     const now = Date.now();
 
@@ -519,14 +429,9 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     }
 
     pendingRequests.add(requestKey);
-    set({
-      isLoading: true,
-      error: null,
-      pendingRequests: new Set(pendingRequests),
-    });
+    set({ isLoading: true, error: null, pendingRequests: new Set(pendingRequests) });
 
     try {
-      console.log("📥 Fetching urgent tasks...");
       const data = await fetchAPI(`${API_URL}/tasks/urgent`, token);
 
       pendingRequests.delete(requestKey);
@@ -539,14 +444,9 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
         pendingRequests: new Set(pendingRequests),
       });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to fetch urgent tasks";
+      const message = error instanceof Error ? error.message : "Failed to fetch urgent tasks";
       pendingRequests.delete(requestKey);
-      set({
-        error: message,
-        isLoading: false,
-        pendingRequests: new Set(pendingRequests),
-      });
+      set({ error: message, isLoading: false, pendingRequests: new Set(pendingRequests) });
       toast.error(message);
     }
   },
@@ -562,9 +462,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     const trimmedQuery = query.trim().toLowerCase();
     const filtered = allTasks.filter((task) => {
       const titleMatch = task.title.toLowerCase().includes(trimmedQuery);
-      const descriptionMatch = task.description
-        ?.toLowerCase()
-        .includes(trimmedQuery);
+      const descriptionMatch = task.description?.toLowerCase().includes(trimmedQuery);
       return titleMatch || descriptionMatch;
     });
 
@@ -572,19 +470,11 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   addTask: async (token, title, description, deadline, isUrgent) => {
-    if (!token) {
-      set({ error: "Please login to add tasks" });
-      throw new Error("Please login to add tasks");
-    }
-
-    if (!title || !title.trim()) {
-      set({ error: "Task title is required" });
-      throw new Error("Task title is required");
-    }
+    if (!token) throw new Error("Please login to add tasks");
+    if (!title || !title.trim()) throw new Error("Task title is required");
 
     set({ isLoading: true, error: null });
     try {
-      console.log("➕ Adding new task...");
       await fetchAPI(`${API_URL}/tasks`, token, {
         method: "POST",
         body: JSON.stringify({
@@ -602,8 +492,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
       set({ isLoading: false });
       toast.success("Task added successfully! ✅");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to add task";
+      const message = error instanceof Error ? error.message : "Failed to add task";
       set({ error: message, isLoading: false });
       toast.error(message);
       throw error;
@@ -611,10 +500,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   updateTask: async (token, id, taskData) => {
-    if (!token) {
-      set({ error: "Please login to update tasks" });
-      throw new Error("Please login to update tasks");
-    }
+    if (!token) throw new Error("Please login to update tasks");
 
     const { tasks, allTasks, completedTasks, urgentTasks, currentView } = get();
 
@@ -629,18 +515,12 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     });
 
     try {
-      console.log("✏️ Updating task:", id);
-
       const backendData: any = {};
       if (taskData.title !== undefined) backendData.title = taskData.title;
-      if (taskData.description !== undefined)
-        backendData.description = taskData.description;
-      if (taskData.deadline !== undefined)
-        backendData.deadline = taskData.deadline;
-      if (taskData.isUrgent !== undefined)
-        backendData.is_urgent = taskData.isUrgent;
-      if (taskData.completed !== undefined)
-        backendData.completed = taskData.completed;
+      if (taskData.description !== undefined) backendData.description = taskData.description;
+      if (taskData.deadline !== undefined) backendData.deadline = taskData.deadline;
+      if (taskData.isUrgent !== undefined) backendData.is_urgent = taskData.isUrgent;
+      if (taskData.completed !== undefined) backendData.completed = taskData.completed;
       if (taskData.status !== undefined) backendData.status = taskData.status;
 
       await fetchAPI(`${API_URL}/tasks/${id}`, token, {
@@ -648,16 +528,10 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
         body: JSON.stringify(backendData),
       });
 
-      set({
-        lastFetch: 0,
-        lastCompletedFetch: 0,
-        lastUrgentFetch: 0,
-      });
-
+      set({ lastFetch: 0, lastCompletedFetch: 0, lastUrgentFetch: 0 });
       toast.success("Task updated successfully! ✨");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to update task";
+      const message = error instanceof Error ? error.message : "Failed to update task";
       set({ error: message });
       toast.error(message);
 
@@ -674,10 +548,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   deleteTask: async (token, id) => {
-    if (!token) {
-      set({ error: "Please login to delete tasks" });
-      throw new Error("Please login to delete tasks");
-    }
+    if (!token) throw new Error("Please login to delete tasks");
 
     const { tasks, allTasks, completedTasks, urgentTasks, currentView } = get();
 
@@ -691,21 +562,12 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     });
 
     try {
-      console.log("🗑️ Deleting task:", id);
-      await fetchAPI(`${API_URL}/tasks/${id}`, token, {
-        method: "DELETE",
-      });
+      await fetchAPI(`${API_URL}/tasks/${id}`, token, { method: "DELETE" });
 
-      set({
-        lastFetch: 0,
-        lastCompletedFetch: 0,
-        lastUrgentFetch: 0,
-      });
-
+      set({ lastFetch: 0, lastCompletedFetch: 0, lastUrgentFetch: 0 });
       toast.success("Task deleted successfully! 🗑️");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to delete task";
+      const message = error instanceof Error ? error.message : "Failed to delete task";
       set({ error: message });
       toast.error(message);
 
@@ -722,10 +584,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
   },
 
   completeTask: async (token, id) => {
-    if (!token) {
-      set({ error: "Please login to complete tasks" });
-      throw new Error("Please login to complete tasks");
-    }
+    if (!token) throw new Error("Please login to complete tasks");
 
     const { tasks, allTasks, completedTasks, urgentTasks, currentView } = get();
 
@@ -740,22 +599,15 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     });
 
     try {
-      console.log("✅ Completing task:", id);
       await fetchAPI(`${API_URL}/tasks/${id}`, token, {
         method: "PUT",
         body: JSON.stringify({ completed: true }),
       });
 
-      set({
-        lastFetch: 0,
-        lastCompletedFetch: 0,
-        lastUrgentFetch: 0,
-      });
-
+      set({ lastFetch: 0, lastCompletedFetch: 0, lastUrgentFetch: 0 });
       toast.success("Task completed! Great job! 🎉");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to complete task";
+      const message = error instanceof Error ? error.message : "Failed to complete task";
       set({ error: message });
       toast.error(message);
 
