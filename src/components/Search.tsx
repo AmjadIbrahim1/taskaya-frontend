@@ -10,7 +10,7 @@ export const Search = memo(() => {
   const { tasks, allTasks, filterTasks, fetchTasks } = useTaskStore();
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
 
-  // ✅ FIXED: Pass token to fetchTasks
+  // ✅ FIXED: Remove second parameter
   useEffect(() => {
     const loadAllTasks = async () => {
       if (token) {
@@ -19,7 +19,8 @@ export const Search = memo(() => {
     };
 
     loadAllTasks();
-  }, [fetchTasks, token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const debouncedFilter = useCallback(
     (value: string) => {
@@ -115,4 +116,4 @@ export const Search = memo(() => {
   );
 });
 
-Search.displayName = "Search"  ;
+Search.displayName = "Search";
