@@ -10,10 +10,11 @@ export const Search = memo(() => {
   const { tasks, allTasks, filterTasks, fetchTasks } = useTaskStore();
   const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
 
+  // ✅ FIXED: Pass token to fetchTasks
   useEffect(() => {
     const loadAllTasks = async () => {
       if (token) {
-        await fetchTasks(token, true);
+        await fetchTasks(token);
       }
     };
 
