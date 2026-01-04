@@ -1,4 +1,4 @@
-// src/components/Search.tsx
+// src/components/Search.tsx - FIXED
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { useAuthStore, useTaskStore } from "@/store";
 import { Search as SearchIcon, X, Sparkles, Loader2 } from "lucide-react";
@@ -8,7 +8,7 @@ export const Search = memo(() => {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const { tasks, allTasks, filterTasks, fetchTasks } = useTaskStore();
-  const debounceTimer = useRef<NodeJS.Timeout>();
+  const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const loadAllTasks = async () => {

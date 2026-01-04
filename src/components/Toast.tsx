@@ -1,4 +1,4 @@
-// src/components/Toast.tsx
+// src/components/Toast.tsx - FIXED
 import { useEffect, useState } from 'react';
 import { CheckCircle2, XCircle, AlertCircle, Info, X } from 'lucide-react';
 import { toast } from '@/lib/toast';
@@ -29,7 +29,9 @@ export function ToastContainer() {
 
   useEffect(() => {
     const unsubscribe = toast.subscribe(setToasts);
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return (

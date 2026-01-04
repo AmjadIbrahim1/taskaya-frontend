@@ -1,5 +1,6 @@
-// src/components/ErrorBoundary.tsx
-import { Component, ErrorInfo, ReactNode } from 'react';
+// src/components/ErrorBoundary.tsx - FIXED
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {

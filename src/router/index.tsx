@@ -1,4 +1,4 @@
-// src/router/index.tsx
+// src/router/index.tsx - FIXED
 import {
   createBrowserRouter,
   RouterProvider,

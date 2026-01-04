@@ -1,5 +1,5 @@
-// src/ProtectedRoute.tsx
-import { ReactNode } from 'react';
+// src/ProtectedRoute.tsx - FIXED
+import type { ReactNode } from 'react';
 import { useAuthStore } from '@/store';
 import { AuthRoute } from './AuthRoute';
 
