@@ -8,7 +8,7 @@ export const Search = memo(() => {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const { tasks, allTasks, filterTasks, fetchTasks } = useTaskStore();
-  const debounceTimer = useRef<ReturnType<typeof setTimeout>>();
+const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load all tasks when component mounts
   useEffect(() => {
