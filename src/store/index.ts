@@ -1,12 +1,15 @@
-// src/store/index.ts - FIXED: All API paths with /api prefix
+// src/store/index.ts - FIXED: Production-ready API URL
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "@/lib/toast";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// ✅ FIXED: Always use environment variable with fallback to Railway
+const API_URL = import.meta.env.VITE_API_URL || "https://taskaya-backend-production.up.railway.app";
 const CACHE_TIME = 5000;
 
-console.log("🔗 API URL:", API_URL);
+console.log("🔗 API Configuration:");
+console.log("   Environment:", import.meta.env.MODE);
+console.log("   API URL:", API_URL);
 
 interface User {
   id: number;
@@ -60,6 +63,7 @@ const fetchAPI = async (
   }
 
   if (!response.ok) {
+    console.error(`❌ API Error (${response.status}):`, data);
     throw new Error(data.error || data.message || `Request failed: ${response.status}`);
   }
 
@@ -67,6 +71,8 @@ const fetchAPI = async (
 };
 
 const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
+  console.log(`🌐 API Request (No Auth): ${options.method || "GET"} ${url}`);
+
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -75,10 +81,26 @@ const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
     },
   });
 
-  const data = await response.json();
+  const contentType = response.headers.get("content-type");
+  const hasJsonContent = contentType && contentType.includes("application/json");
+
+  let data;
+  if (hasJsonContent) {
+    try {
+      data = await response.json();
+    } catch (e) {
+      console.error("Failed to parse JSON:", e);
+      data = { error: "Invalid response from server" };
+    }
+  } else {
+    const text = await response.text();
+    console.error("Non-JSON response:", text);
+    data = { error: text || "Invalid response from server" };
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || `Request failed: ${response.status}`);
+    console.error(`❌ API Error (${response.status}):`, data);
+    throw new Error(data.error || data.message || `Request failed: ${response.status}`);
   }
 
   return data;
@@ -121,11 +143,13 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
+          console.log("🔐 Attempting login...");
           const data = await fetchAPINoAuth(`${API_URL}/api/auth/login`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
 
+          console.log("✅ Login successful!");
           set({
             user: data.user,
             token: data.accessToken,
@@ -138,6 +162,7 @@ export const useAuthStore = create<AuthState>()(
           toast.success(`Welcome back, ${data.user.email}! 👋`);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Login failed";
+          console.error("❌ Login error:", message);
           set({ error: message, isLoading: false });
           toast.error(message);
           throw error;
@@ -147,11 +172,13 @@ export const useAuthStore = create<AuthState>()(
       register: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
+          console.log("📝 Attempting registration...");
           const data = await fetchAPINoAuth(`${API_URL}/api/auth/register`, {
             method: "POST",
             body: JSON.stringify({ email, password }),
           });
 
+          console.log("✅ Registration successful!");
           set({
             user: data.user,
             token: data.accessToken,
@@ -164,6 +191,7 @@ export const useAuthStore = create<AuthState>()(
           toast.success(`Account created successfully! Welcome! 🎉`);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Registration failed";
+          console.error("❌ Registration error:", message);
           set({ error: message, isLoading: false });
           toast.error(message);
           throw error;
