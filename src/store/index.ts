@@ -1,4 +1,4 @@
-// src/store/index.ts - CRITICAL FIX: Use Clerk Token properly
+// src/store/index.ts - COMPLETE FIX ✅
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "@/lib/toast";
@@ -35,7 +35,7 @@ export interface Task {
 }
 
 // ============================================
-// API HELPERS - FIXED: Better error handling
+// API HELPERS
 // ============================================
 const fetchAPI = async (
   url: string,
@@ -54,7 +54,6 @@ const fetchAPI = async (
     },
   });
 
-  // Check if response has content
   const contentType = response.headers.get("content-type");
   const hasJsonContent =
     contentType && contentType.includes("application/json");
@@ -107,7 +106,7 @@ const fetchAPINoAuth = async (url: string, options: RequestInit = {}) => {
 };
 
 // ============================================
-// AUTH STORE (JWT Legacy)
+// AUTH STORE
 // ============================================
 interface AuthState {
   user: User | null;
@@ -293,7 +292,7 @@ export const useAuthStore = create<AuthState>()(
 );
 
 // ============================================
-// TASK STORE (Clerk Primary + JWT Legacy)
+// TASK STORE - ✅ FIXED fetchTasks signature
 // ============================================
 interface TaskState {
   tasks: Task[];
@@ -309,6 +308,7 @@ interface TaskState {
   currentView: "all" | "completed" | "urgent";
   pendingRequests: Set<string>;
 
+  // ✅ CRITICAL FIX: fetchTasks must accept token parameter
   fetchTasks: (token: string, force?: boolean) => Promise<void>;
   addTask: (
     token: string,
@@ -368,6 +368,7 @@ export const useTaskStore = create<TaskState>()((set, get) => ({
     set({ tasks: filtered, currentView: view });
   },
 
+  // ✅ CRITICAL FIX: Implementation must match interface signature
   fetchTasks: async (token: string, force = false) => {
     if (!token) {
       set({ error: "Please login to view tasks" });
