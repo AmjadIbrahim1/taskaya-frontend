@@ -1,4 +1,4 @@
-// src/components/AddTask.tsx
+// src/components/AddTask.tsx - FIXED: Added mobile-add-task ID
 import { useState, useCallback, memo } from "react";
 import { useAuthStore, useTaskStore } from "@/store";
 import {
@@ -67,7 +67,10 @@ export const AddTask = memo(() => {
   }, []);
 
   return (
-    <div className="p-6 border-b bg-gradient-to-br from-card/50 to-primary/5 backdrop-blur-sm">
+    <div
+      id="mobile-add-task"
+      className="p-6 border-b bg-gradient-to-br from-card/50 to-primary/5 backdrop-blur-sm"
+    >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex gap-3">
           <input
@@ -179,7 +182,8 @@ export const AddTask = memo(() => {
           <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-xl animate-in fade-in duration-300">
             <CalendarIcon className="w-4 h-4 text-primary" />
             <span className="text-sm font-bold text-primary flex-1">
-              Deadline: {new Date(deadline).toLocaleDateString("en-US", {
+              Deadline:{" "}
+              {new Date(deadline).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
                 year: "numeric",
