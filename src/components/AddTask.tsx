@@ -72,7 +72,7 @@ export const AddTask = memo(() => {
       className="p-6 border-b bg-gradient-to-br from-card/50 to-primary/5 backdrop-blur-sm"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             value={title}
@@ -82,51 +82,53 @@ export const AddTask = memo(() => {
             disabled={isLoading}
           />
 
-          <button
-            type="button"
-            onClick={toggleDescription}
-            className={`p-4 rounded-2xl border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
-              showDescription
-                ? "bg-gradient-to-br from-primary to-purple-500 text-white border-primary"
-                : "bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 border-input"
-            }`}
-            disabled={isLoading}
-            title="Add Description"
-          >
-            <FileText className="w-6 h-6" />
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={toggleDescription}
+              className={`flex-1 sm:flex-none p-4 rounded-2xl border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                showDescription
+                  ? "bg-gradient-to-br from-primary to-purple-500 text-white border-primary"
+                  : "bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 border-input"
+              }`}
+              disabled={isLoading}
+              title="Add Description"
+            >
+              <FileText className="w-6 h-6 mx-auto" />
+            </button>
 
-          <button
-            type="button"
-            onClick={toggleCalendar}
-            className={`p-4 rounded-2xl border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
-              showCalendar || deadline
-                ? "bg-gradient-to-br from-primary to-purple-500 text-white border-primary"
-                : "bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 border-input"
-            }`}
-            disabled={isLoading}
-            title="Set Deadline"
-          >
-            <CalendarIcon className="w-6 h-6" />
-          </button>
+            <button
+              type="button"
+              onClick={toggleCalendar}
+              className={`flex-1 sm:flex-none p-4 rounded-2xl border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                showCalendar || deadline
+                  ? "bg-gradient-to-br from-primary to-purple-500 text-white border-primary"
+                  : "bg-background text-muted-foreground hover:text-foreground hover:border-primary/50 border-input"
+              }`}
+              disabled={isLoading}
+              title="Set Deadline"
+            >
+              <CalendarIcon className="w-6 h-6 mx-auto" />
+            </button>
 
-          <button
-            type="submit"
-            disabled={isLoading || !title.trim()}
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-primary via-purple-500 to-primary text-white font-black text-lg hover:opacity-90 active:scale-95 transition-all duration-200 shadow-xl shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 bg-[length:200%_auto] animate-gradient"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-6 h-6 animate-spin" />
-                Adding...
-              </>
-            ) : (
-              <>
-                <Plus className="w-6 h-6" />
-                Add
-              </>
-            )}
-          </button>
+            <button
+              type="submit"
+              disabled={isLoading || !title.trim()}
+              className="flex-1 sm:flex-none px-8 py-4 rounded-2xl bg-gradient-to-r from-primary via-purple-500 to-primary text-white font-black text-lg hover:opacity-90 active:scale-95 transition-all duration-200 shadow-xl shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 bg-[length:200%_auto] animate-gradient"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span className="hidden sm:inline">Adding...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-6 h-6" />
+                  <span className="hidden sm:inline">Add</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {showDescription && (
