@@ -1,7 +1,5 @@
-// src/components/layouts/MainLayout.tsx - FIXED: Mobile FAB
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Plus } from "lucide-react";
 import { Side } from "../Side";
 import { AddTask } from "../AddTask";
 import { Search } from "../Search";
@@ -53,20 +51,6 @@ export function MainLayout() {
     }
   };
 
-  const scrollToAddTask = () => {
-    const addTaskElement = document.getElementById("mobile-add-task");
-    if (addTaskElement) {
-      addTaskElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      // Focus on the input after scrolling
-      setTimeout(() => {
-        const input = addTaskElement.querySelector("input");
-        if (input) {
-          input.focus();
-        }
-      }, 500);
-    }
-  };
-
   return (
     <div className="flex h-screen bg-background">
       <Side activeView={activeView} onViewChange={handleViewChange} />
@@ -87,34 +71,6 @@ export function MainLayout() {
           <AddTask />
         </div>
       </div>
-
-      {/* Mobile Floating Add Button (FAB) */}
-      <button
-        onClick={scrollToAddTask}
-        className="lg:hidden fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-r from-primary via-purple-500 to-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center active:scale-95 transition-all hover:shadow-primary/60 animate-bounce-subtle"
-        aria-label="Add new task"
-      >
-        <Plus className="w-8 h-8" strokeWidth={3} />
-      </button>
-
-      <style>{`
-        @keyframes bounce-subtle {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-8px);
-          }
-        }
-        
-        .animate-bounce-subtle {
-          animation: bounce-subtle 2s ease-in-out infinite;
-        }
-        
-        .animate-bounce-subtle:active {
-          animation: none;
-        }
-      `}</style>
     </div>
   );
 }

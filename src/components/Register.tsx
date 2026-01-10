@@ -1,103 +1,95 @@
-// src/components/Register.tsx - FIXED with better error handling
+// src/components/Register.tsx - React Hook Form + Zod Validation
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store";
 import { Eye, EyeOff, UserPlus, Loader2, ArrowLeft } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface RegisterProps {
   onSwitchToLogin: () => void;
   onBack: () => void;
 }
 
+// Validation Schema
+const registerSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, "Email is required")
+      .min(5, "Email must be at least 5 characters")
+      .email("Please enter a valid email address"),
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .max(100, "Password is too long (max 100 characters)")
+      .regex(/[a-zA-Z]/, "Password must contain at least one letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(
+        /[^a-zA-Z0-9]/,
+        "Password must contain at least one special character (!@#$%^&*)"
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
 export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
   const navigate = useNavigate();
-  const { register } = useAuthStore();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const { register: registerUser } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [generalError, setGeneralError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setGeneralError("");
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onTouched",
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    console.log("📝 Registration Form Submit");
-    console.log("   Email:", email);
-    console.log("   Password Length:", password.length);
-    console.log("   Passwords Match:", password === confirmPassword);
-
-    // Frontend validation
-    const fieldErrors: {
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-    } = {};
-
-    // Email validation
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      fieldErrors.email = "Please enter a valid email address";
-    }
-
-    // Password validation - Simple (6+ characters)
-    if (!password) {
-      fieldErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      fieldErrors.password = "Password must be at least 6 characters";
-    } else if (password.length > 100) {
-      fieldErrors.password = "Password is too long (max 100 characters)";
-    }
-
-    // Confirm password validation
-    if (!confirmPassword) {
-      fieldErrors.confirmPassword = "Please confirm your password";
-    } else if (password !== confirmPassword) {
-      fieldErrors.confirmPassword = "Passwords do not match";
-    }
-
-    // Show errors if any
-    if (Object.keys(fieldErrors).length > 0) {
-      console.log("❌ Frontend validation failed:", fieldErrors);
-      setErrors(fieldErrors);
-      return;
-    }
-
-    console.log("✅ Frontend validation passed");
-    setIsLoading(true);
-
+  const onSubmit = async (data: RegisterFormData) => {
     try {
-      console.log("🌐 Sending registration request to backend...");
-      await register(email, password);
+      console.log("📝 Registration Form Submit");
+      console.log("   Email:", data.email);
+      console.log("   Password Length:", data.password.length);
+
+      await registerUser(data.email, data.password);
       console.log("✅ Registration successful!");
       navigate("/", { replace: true });
     } catch (err: any) {
       console.error("❌ Registration error:", err);
 
-      // Parse backend error
       let errorMessage = "Registration failed. Please try again.";
 
       if (err?.message) {
         errorMessage = err.message;
 
-        // Handle specific backend validation errors
         if (errorMessage.includes("Validation failed")) {
           errorMessage = "Please check your email and password format";
         } else if (errorMessage.includes("already exists")) {
-          errorMessage =
-            "This email is already registered. Please login instead.";
+          setError("email", {
+            type: "server",
+            message: "This email is already registered",
+          });
+          return;
         }
       }
 
-      setGeneralError(errorMessage);
-      setIsLoading(false);
+      setError("root", { type: "server", message: errorMessage });
     }
   };
 
@@ -105,8 +97,9 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-purple-500/10 p-4">
       <div className="w-full max-w-md">
         <button
+          type="button"
           onClick={onBack}
-          disabled={isLoading}
+          disabled={isSubmitting}
           className="mb-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all disabled:opacity-50"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -128,10 +121,11 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
         </div>
 
         <div className="bg-card border-2 rounded-3xl p-8 shadow-2xl shadow-primary/10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 backdrop-blur-xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {generalError && (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* General Error */}
+            {errors.root?.message && (
               <div className="p-4 rounded-2xl bg-destructive/10 border-2 border-destructive/30 text-destructive font-bold text-sm animate-in fade-in">
-                ⚠️ {generalError}
+                ⚠️ {errors.root.message}
               </div>
             )}
 
@@ -142,18 +136,17 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               </label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
                 className={`w-full px-5 py-4 rounded-2xl bg-background border-2 ${
                   errors.email ? "border-destructive" : "border-input"
                 } focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold shadow-lg`}
                 placeholder="you@example.com"
-                disabled={isLoading}
+                disabled={isSubmitting}
                 autoComplete="email"
               />
               {errors.email && (
                 <p className="text-destructive text-sm font-bold">
-                  {errors.email}
+                  {errors.email.message}
                 </p>
               )}
             </div>
@@ -166,20 +159,19 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                   className={`w-full px-5 py-4 pr-14 rounded-2xl bg-background border-2 ${
                     errors.password ? "border-destructive" : "border-input"
                   } focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold shadow-lg`}
-                  placeholder="At least 6 characters"
-                  disabled={isLoading}
+                  placeholder="At least 8 characters"
+                  disabled={isSubmitting}
                   autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-all hover:scale-110"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -191,11 +183,12 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               </div>
               {errors.password && (
                 <p className="text-destructive text-sm font-bold">
-                  {errors.password}
+                  {errors.password.message}
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                💡 Use at least 6 characters for better security
+                💡 Must include: letter, number, and special character
+                (!@#$%^&*)
               </p>
             </div>
 
@@ -207,22 +200,21 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               <div className="relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  {...register("confirmPassword")}
                   className={`w-full px-5 py-4 pr-14 rounded-2xl bg-background border-2 ${
                     errors.confirmPassword
                       ? "border-destructive"
                       : "border-input"
                   } focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none transition-all font-bold shadow-lg`}
                   placeholder="Confirm your password"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-all hover:scale-110"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   tabIndex={-1}
                 >
                   {showConfirmPassword ? (
@@ -234,7 +226,7 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               </div>
               {errors.confirmPassword && (
                 <p className="text-destructive text-sm font-bold">
-                  {errors.confirmPassword}
+                  {errors.confirmPassword.message}
                 </p>
               )}
             </div>
@@ -242,10 +234,10 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary via-purple-500 to-primary text-white font-black text-lg hover:opacity-90 active:scale-95 transition-all shadow-2xl disabled:opacity-50 flex items-center justify-center gap-3 bg-[length:200%_auto] animate-gradient"
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-6 h-6 animate-spin" />
                   Creating account...
@@ -263,9 +255,10 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
             <p className="text-sm font-bold text-muted-foreground">
               Already have an account?{" "}
               <button
+                type="button"
                 onClick={onSwitchToLogin}
                 className="text-primary font-black hover:underline transition-all"
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
                 Sign in 👋
               </button>
