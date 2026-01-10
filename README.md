@@ -9,9 +9,7 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 **A modern, beautiful, and powerful task management application built with React 19 and TypeScript**
-
-[🌐 Live Demo](https://taskaya-frontend.vercel.app) | [📖 Documentation](#documentation) | [🐛 Report Bug](https://github.com/yourusername/taskaya-frontend/issues) | [✨ Request Feature](https://github.com/yourusername/taskaya-frontend/issues)
-
+[🌐 Live Demo](https://taskaya-frontend.vercel.app)
 </div>
 
 ---
@@ -89,7 +87,7 @@ npm -v   # Should be >= 8.0.0
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/taskaya-frontend.git
+git clone https://github.com/AmjadIbrahim1/taskaya-frontend.git
 cd taskaya-frontend
 ```
 
@@ -104,7 +102,7 @@ npm install
 cp .env.example .env
 
 # Edit .env with your backend URL
-VITE_API_URL=https://your-backend-url.com
+VITE_API_URL=https://taskaya-backend-production.up.railway.app/
 ```
 
 4. **Run development server**
@@ -161,7 +159,7 @@ docker build -t taskaya-frontend:latest .
 ### Run Docker Container
 ```bash
 docker run -p 80:80 \
-  -e VITE_API_URL=https://your-backend-url.com \
+  -e VITE_API_URL=https://taskaya-backend-production.up.railway.app/ \
   taskaya-frontend:latest
 ```
 
@@ -335,7 +333,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by [Your Name](https://github.com/yourusername)**
+**Made with ❤️ by [Amjad](https://github.com/AmjadIbrahim1)**
 
 [⬆ Back to Top](#-taskaya-frontend)
 
