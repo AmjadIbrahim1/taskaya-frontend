@@ -1,4 +1,4 @@
-// frontend/src/lib/validations.ts - FIXED: Simple validation
+// frontend/src/lib/validations.ts
 import { z } from "zod";
 
 

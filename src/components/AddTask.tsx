@@ -1,4 +1,4 @@
-// src/components/AddTask.tsx - FIXED: Added mobile-add-task ID
+// src/components/AddTask.tsx 
 import { useState, useCallback, memo } from "react";
 import { useAuthStore, useTaskStore } from "@/store";
 import {

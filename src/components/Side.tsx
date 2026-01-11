@@ -1,4 +1,4 @@
-// src/components/Side.tsx - FIXED: All Tasks shows total count
+// src/components/Side.tsx 
 import { useMemo, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore, useTaskStore } from "@/store";

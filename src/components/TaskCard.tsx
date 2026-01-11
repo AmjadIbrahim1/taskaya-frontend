@@ -1,4 +1,4 @@
-// src/components/TaskCard.tsx - FIXED: Fully editable inputs
+// src/components/TaskCard.tsx 
 import { memo } from "react";
 import {
   CheckCircle2,

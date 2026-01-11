@@ -1,4 +1,4 @@
-// src/components/Register.tsx - React Hook Form + Zod Validation
+// src/components/Register.tsx 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store";

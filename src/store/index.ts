@@ -1,4 +1,4 @@
-// src/store/index.ts - FIXED: Production-ready API URL
+// src/store/index.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "@/lib/toast";

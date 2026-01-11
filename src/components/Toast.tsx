@@ -1,4 +1,4 @@
-// src/components/Toast.tsx - FIXED
+// src/components/Toast.tsx 
 import { useEffect, useState } from 'react';
 import { CheckCircle2, XCircle, AlertCircle, Info, X } from 'lucide-react';
 import { toast } from '@/lib/toast';

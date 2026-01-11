@@ -1,4 +1,4 @@
-// src/components/Search.tsx - COMPLETE FINAL VERSION ✅
+// src/components/Search.tsx
 import { useState, useEffect, useCallback, memo, useRef } from "react";
 import { useAuthStore, useTaskStore } from "@/store";
 import { Search as SearchIcon, X, Sparkles, Loader2 } from "lucide-react";
