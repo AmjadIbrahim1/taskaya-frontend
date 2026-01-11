@@ -422,7 +422,6 @@ export function Main() {
 
   return (
     <div className="flex-1 p-6 space-y-6 overflow-auto">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="flex items-center gap-4">
@@ -483,7 +482,6 @@ export function Main() {
         </div>
       </div>
 
-      {/* Tasks List */}
       {sortedTasks.length > 0 ? (
         <div className="space-y-3">
           {stats.urgentCount > 0 && (

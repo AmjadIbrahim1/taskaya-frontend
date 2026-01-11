@@ -1,0 +1,12 @@
+# File: frontend/.dockerignore
+node_modules
+dist
+.git
+.env
+.env.local
+*.log
+.vscode
+.idea
+README.md
+.gitignore
+

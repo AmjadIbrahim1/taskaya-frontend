@@ -28,15 +28,12 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onClose}
       />
 
-      {/* Dialog */}
       <div className="relative bg-card border rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
-        {/* Icon */}
         <div
           className={`inline-flex items-center justify-center w-14 h-14 rounded-full mb-4 ${
             variant === "danger" ? "bg-destructive/10" : "bg-amber-500/10"
@@ -49,11 +46,9 @@ export function ConfirmDialog({
           />
         </div>
 
-        {/* Content */}
         <h3 className="text-xl font-bold text-foreground mb-2">{title}</h3>
         <p className="text-muted-foreground mb-6">{description}</p>
 
-        {/* Actions */}
         <div className="flex gap-3">
           <button
             onClick={onClose}

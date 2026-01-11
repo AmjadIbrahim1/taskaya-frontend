@@ -12,7 +12,6 @@ interface RegisterProps {
   onBack: () => void;
 }
 
-// Validation Schema
 const registerSchema = z
   .object({
     email: z
@@ -122,14 +121,12 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
 
         <div className="bg-card border-2 rounded-3xl p-8 shadow-2xl shadow-primary/10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 backdrop-blur-xl">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* General Error */}
             {errors.root?.message && (
               <div className="p-4 rounded-2xl bg-destructive/10 border-2 border-destructive/30 text-destructive font-bold text-sm animate-in fade-in">
                 ⚠️ {errors.root.message}
               </div>
             )}
 
-            {/* Email Field */}
             <div className="space-y-2">
               <label className="text-sm font-black text-foreground">
                 Email Address
@@ -151,7 +148,6 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               )}
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
               <label className="text-sm font-black text-foreground">
                 Password
@@ -192,7 +188,6 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               </p>
             </div>
 
-            {/* Confirm Password Field */}
             <div className="space-y-2">
               <label className="text-sm font-black text-foreground">
                 Confirm Password
@@ -231,7 +226,6 @@ export function Register({ onSwitchToLogin, onBack }: RegisterProps) {
               )}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}

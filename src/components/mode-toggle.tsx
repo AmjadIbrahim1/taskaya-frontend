@@ -13,7 +13,6 @@ export function ModeToggle() {
       type="button"
       className="relative flex h-10 w-20 items-center rounded-full border bg-background p-1 shadow-sm transition-colors"
     >
-      {/* Sliding indicator */}
       <span
         className={cn(
           "absolute left-1 top-1 h-8 w-8 rounded-full bg-primary shadow transition-all duration-300 ease-in-out",
@@ -21,7 +20,6 @@ export function ModeToggle() {
         )}
       />
 
-      {/* Light */}
       <span
         onClick={() => setTheme("light")}
         className="relative z-10 flex h-8 w-8 items-center justify-center"
@@ -34,7 +32,6 @@ export function ModeToggle() {
         />
       </span>
 
-      {/* Dark */}
       <span
         onClick={() => setTheme("dark")}
         className="relative z-10 flex h-8 w-8 items-center justify-center"

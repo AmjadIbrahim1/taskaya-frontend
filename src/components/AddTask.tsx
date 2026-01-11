@@ -36,7 +36,6 @@ export const AddTask = memo(() => {
           isUrgent
         );
 
-        // Reset form
         setTitle("");
         setDescription("");
         setDeadline("");

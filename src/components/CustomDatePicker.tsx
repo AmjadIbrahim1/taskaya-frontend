@@ -41,7 +41,6 @@ export function CustomDatePicker({
     setIsOpen(false);
   };
 
-  // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -158,7 +157,6 @@ export function CustomDatePicker({
 
   return (
     <div className="relative w-full">
-      {/* Button Container with Clear Button */}
       <div className="relative w-full">
         <button
           ref={buttonRef}
@@ -179,7 +177,6 @@ export function CustomDatePicker({
           </span>
         </button>
         
-        {/* Clear Button - OUTSIDE the main button */}
         {value && !disabled && (
           <button
             ref={clearButtonRef}
@@ -192,13 +189,11 @@ export function CustomDatePicker({
         )}
       </div>
 
-      {/* Calendar Popup */}
       {isOpen && !disabled && (
         <div 
           ref={pickerRef}
           className="absolute top-full left-0 mt-2 z-50 bg-card border-2 border-primary/30 rounded-2xl shadow-2xl p-4 w-80 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200"
         >
-          {/* Header */}
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
             <button
               type="button"
@@ -219,7 +214,6 @@ export function CustomDatePicker({
             </button>
           </div>
 
-          {/* Day Names */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {dayNames.map((day, i) => (
               <div
@@ -231,7 +225,6 @@ export function CustomDatePicker({
             ))}
           </div>
 
-          {/* Calendar Days */}
           <div className="grid grid-cols-7 gap-1">
             {emptyDays.map((_, index) => (
               <div key={`empty-${index}`} className="aspect-square" />
@@ -266,7 +259,6 @@ export function CustomDatePicker({
             })}
           </div>
 
-          {/* Footer */}
           <div className="mt-4 pt-3 border-t border-border flex justify-between items-center">
             <button
               type="button"

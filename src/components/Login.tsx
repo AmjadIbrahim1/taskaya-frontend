@@ -1,4 +1,4 @@
-// src/components/Login.tsx - OPTIMIZED: Instant redirect after login
+// src/components/Login.tsx 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store";
@@ -27,7 +27,6 @@ export function Login({ onSwitchToRegister, onBack }: LoginProps) {
     setErrors({});
     setGeneralError("");
 
-    // Validate with basic checks
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setErrors({ email: "Please enter a valid email address" });
       return;
@@ -40,10 +39,8 @@ export function Login({ onSwitchToRegister, onBack }: LoginProps) {
 
     setIsLoading(true);
     try {
-      // OPTIMIZED: Login and immediately navigate
       await login(email, password);
 
-      // INSTANT REDIRECT - No setTimeout, no delays
       navigate("/", { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
@@ -51,9 +48,8 @@ export function Login({ onSwitchToRegister, onBack }: LoginProps) {
         err?.message ||
           "Invalid credentials. Please check your email and password."
       );
-      setIsLoading(false); // Only set loading false on error
+      setIsLoading(false); 
     }
-    // Note: We don't set isLoading(false) on success to avoid re-render before navigation
   };
 
   return (

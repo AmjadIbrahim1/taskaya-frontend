@@ -127,7 +127,7 @@ export function Side({ activeView, onViewChange }: SideProps) {
     ).length;
     const completedTotal = allTasks.filter((t) => t.completed).length;
     const pendingTotal = urgentActive + normalPending;
-    const totalTasks = allTasks.length; // This includes ALL tasks: completed, urgent, pending
+    const totalTasks = allTasks.length; 
 
     return {
       urgentActive,
@@ -136,7 +136,7 @@ export function Side({ activeView, onViewChange }: SideProps) {
       normalPending,
       completedTotal,
       pendingTotal,
-      totalTasks, // Total count = all tasks
+      totalTasks,
     };
   }, [allTasks]);
 

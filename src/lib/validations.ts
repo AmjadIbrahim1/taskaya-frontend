@@ -1,9 +1,6 @@
 // frontend/src/lib/validations.ts - FIXED: Simple validation
 import { z } from "zod";
 
-// ============================================
-// AUTH SCHEMAS - SIMPLIFIED
-// ============================================
 
 export const loginSchema = z.object({
   email: z
@@ -27,9 +24,6 @@ export const registerSchema = loginSchema
     path: ["confirmPassword"],
   });
 
-// ============================================
-// TASK SCHEMAS
-// ============================================
 
 export const taskSchema = z.object({
   title: z
@@ -82,9 +76,6 @@ export const searchSchema = z.object({
     .trim(),
 });
 
-// ============================================
-// TYPES
-// ============================================
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;

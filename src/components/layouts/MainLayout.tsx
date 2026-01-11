@@ -1,3 +1,4 @@
+// frontend/src/components/layouts/MainLayout.tsx
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Side } from "../Side";
@@ -15,7 +16,6 @@ export function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Update page title
   useEffect(() => {
     const title = pageTitles[location.pathname] || "Taskaya";
     document.title = `${title} | Taskaya`;
@@ -59,14 +59,12 @@ export function MainLayout() {
         <Breadcrumbs />
         <Search />
 
-        {/* Desktop: AddTask at top */}
         <div className="hidden lg:block">
           <AddTask />
         </div>
 
         <Outlet />
 
-        {/* Mobile: AddTask at bottom */}
         <div className="lg:hidden">
           <AddTask />
         </div>

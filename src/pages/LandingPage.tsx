@@ -33,7 +33,6 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-purple-500/10">
-      {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-700">
@@ -60,7 +59,6 @@ export function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <div className="pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -93,7 +91,6 @@ export function LandingPage() {
             </button>
           </div>
 
-          {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
             <div className="group p-8 rounded-3xl bg-card border-2 border-transparent hover:border-primary/30 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -134,7 +131,6 @@ export function LandingPage() {
             </div>
           </div>
 
-          {/* Stats Section */}
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-20 animate-in fade-in zoom-in duration-700 delay-800">
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
@@ -161,7 +157,6 @@ export function LandingPage() {
             </div>
           </div>
 
-          {/* Final CTA */}
           <div className="text-center bg-gradient-to-br from-primary/10 to-purple-500/10 border-2 border-primary/30 rounded-3xl p-12 animate-in fade-in zoom-in duration-700 delay-900">
             <h2 className="text-4xl font-black text-foreground mb-4">
               Ready to Get Started?
@@ -181,7 +176,6 @@ export function LandingPage() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="border-t py-8">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-sm text-muted-foreground">

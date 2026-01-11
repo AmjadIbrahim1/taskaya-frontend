@@ -3,8 +3,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "@/lib/toast";
 
-// ✅ FIXED: Always use environment variable with fallback to Railway
-// Remove any trailing slashes to prevent double slashes in API calls
 const API_URL = (import.meta.env.VITE_API_URL || "https://taskaya-backend-production.up.railway.app").replace(/\/+$/, "");
 const CACHE_TIME = 5000;
 

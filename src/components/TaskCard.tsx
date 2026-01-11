@@ -67,7 +67,6 @@ export const TaskCard = memo(
         )}
       >
         <div className="flex items-start gap-4">
-          {/* Complete Button */}
           <button
             type="button"
             onClick={(e) => {
@@ -89,11 +88,9 @@ export const TaskCard = memo(
             )}
           </button>
 
-          {/* Task Content */}
           <div className="flex-1 min-w-0">
             {isEditing ? (
               <div className="space-y-3">
-                {/* Title Input - FIXED */}
                 <input
                   type="text"
                   value={editData.title}
@@ -112,7 +109,6 @@ export const TaskCard = memo(
                   autoFocus
                 />
 
-                {/* Description Textarea - FIXED */}
                 <textarea
                   value={editData.description}
                   onChange={(e) => {
@@ -129,7 +125,6 @@ export const TaskCard = memo(
                   rows={2}
                 />
 
-                {/* Date Picker - FIXED */}
                 <div onClick={(e) => e.stopPropagation()}>
                   <CustomDatePicker
                     value={editData.deadline}
@@ -137,7 +132,6 @@ export const TaskCard = memo(
                   />
                 </div>
 
-                {/* Urgent Toggle - FIXED */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -154,7 +148,6 @@ export const TaskCard = memo(
                   {editData.isUrgent ? "🔥 Urgent" : "⭐ Normal"}
                 </button>
 
-                {/* Action Buttons */}
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -185,7 +178,6 @@ export const TaskCard = memo(
             ) : (
               <>
                 <div className="flex items-start gap-2">
-                  {/* Non-clickable urgent emoji */}
                   {task.isUrgent && !task.completed && (
                     <span
                       className="text-lg animate-pulse pointer-events-none select-none"
@@ -239,7 +231,6 @@ export const TaskCard = memo(
             )}
           </div>
 
-          {/* Action Buttons */}
           {!isEditing && (
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
